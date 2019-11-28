@@ -5,14 +5,13 @@ import sys
 import numpy as np
 # from torchvision.transforms.functional import to_tensor
 from torchvision import transforms
-# from matplotlib import pyplot as plt, cm
 from PIL import Image
 
-from config import C
+from config import C, LOG
 from model import CSRNet
 
 
-def count(img, plot=False):
+def count(img):
     model = CSRNet()
     if C["cuda"]:
         model = model.cuda()
@@ -39,7 +38,7 @@ def count(img, plot=False):
     return count
 
 
-def count_frag(img, t_width=1500, name="None", plot=False):
+def count_frag(img, t_width=1000, name="None"):
     o_width, o_height = img.size
     factor = int(round(o_width/t_width, 0))
     n_width = int(o_width/factor)
@@ -49,14 +48,21 @@ def count_frag(img, t_width=1500, name="None", plot=False):
         for j in range(0, o_width, n_width):
             box = (j, i, j+n_width, i+n_height)
             c_image = img.crop(box)
-            c = count(c_image, plot=plot)
+            c = count(c_image)
             n += c
             print(f"\t{n:6d} {c:+6d}")
     print(f"\t{n:6d}")
-    with open("./count.log", "a") as f:
-        f.write(f"{n:>8}    {name}\n")
+    with open(LOG, "a") as f:
+        f.write(f"{name}[{t_width}]:{n}\n")
     return n
 
 
+def main(img_name, t_width=1200):
+    count_frag(Image.open(img_name), t_width, img_name.split("/")[-1])
+
+
 if __name__ == "__main__":
-    count_frag(Image.open(sys.argv[2]), name=sys.argv[2])
+    if len(sys.argv) > 2:
+        main(sys.argv[1], int(sys.argv[2]))
+    else:
+        main(sys.argv[1])

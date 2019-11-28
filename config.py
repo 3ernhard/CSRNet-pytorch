@@ -1,3 +1,6 @@
+ROOT = "./"
+LOG = ROOT + "count.log"
+
 C = {
     "cuda": False,
     "pth": "0model_best.pth.tar",
